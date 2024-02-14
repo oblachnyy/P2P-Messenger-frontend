@@ -9,8 +9,10 @@ class Login extends React.Component {
         super();
         this.state = {
             isLoggedIn: false,
+            isFormValid: false,
             username: "",
             password: "",
+            error_message: ""
         };
         this.loginHandler = this.loginHandler.bind(this);
         this.registerHandler = this.registerHandler.bind(this);
@@ -22,6 +24,7 @@ class Login extends React.Component {
         const username = e.target.value;
         this.setState({
             username,
+            isFormValid: username && this.state.password  // Check form validity
         });
     }
 
@@ -29,6 +32,7 @@ class Login extends React.Component {
         const password = e.target.value;
         this.setState({
             password,
+            isFormValid: this.state.username && password  // Check form validity
         });
     }
 
@@ -62,6 +66,9 @@ class Login extends React.Component {
             })
             .catch((err) => {
                 console.log("ERROR LOGIN: \n" + err);
+                this.setState({
+                    error_message: "Такого пользователя не существует.",
+                });
             });
     }
 
@@ -159,6 +166,9 @@ class Login extends React.Component {
                                 />
                             </Box>
                         </Row>
+                        <Box color="red" padding="small">
+                            {error_message !== "" && <p>{error_message}</p>}
+                        </Box>
                     </Stack>
                 </Box>
             );
