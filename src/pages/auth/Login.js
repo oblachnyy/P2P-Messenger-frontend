@@ -154,6 +154,7 @@ class Login extends React.Component {
                                     size="medium"
                                     text="Войти"
                                     onClick={this.loginHandler}
+                                    disabled={!this.state.isFormValid}  // Disable the button based on form validity
                                 />
                             </Box>
                             <Box>
