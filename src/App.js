@@ -1,5 +1,6 @@
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import NavBar from "./components/NavBar";
+import Login from "./pages/auth/Login";
 
 
 function App() {
@@ -7,7 +8,10 @@ function App() {
       <BrowserRouter>
         <div className="app">
           <NavBar/>
+            <Switch>
+                <Route path="/login" component={Login}/>
 
+            </Switch>
         </div>
       </BrowserRouter>
   );
