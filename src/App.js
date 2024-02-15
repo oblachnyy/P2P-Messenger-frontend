@@ -1,3 +1,4 @@
+import "./App.css";
 import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NavBar from "./components/NavBar";
