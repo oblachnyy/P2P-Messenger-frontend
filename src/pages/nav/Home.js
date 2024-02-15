@@ -20,6 +20,7 @@ class Home extends React.Component {
             roomNav: false,
             new_room_name: "",
             selected_room_name:"",
+            errorMessage: "",
         };
         this.onNewRoomChange = this.onNewRoomChange.bind(this);
         this.onSelectedRoomChange = this.onSelectedRoomChange.bind(this);
@@ -121,6 +122,23 @@ class Home extends React.Component {
 
     startNewRoomClick(e) {
         const roomName = this.state.new_room_name.trim();
+        if (roomName === "") {
+            const errorMessage = "Название команты не может быть пустым";
+            this.setState({ errorMessage });
+            return;
+        }
+
+        if (roomName.includes(" ")) {
+            const errorMessage = "Название команты не может быть пустым";
+            this.setState({ errorMessage });
+            return;
+        }
+
+        if (roomName.length > 20) {
+            const errorMessage = "Название команты не может иметь более 20 символов";
+            this.setState({ errorMessage });
+            return;
+        }
 
         let body = {
             room_name: roomName
@@ -146,6 +164,8 @@ class Home extends React.Component {
                 }
             })
             .catch((err) => {
+                const errorMessage = "Название комнаты не должно дублировать название других комнат";
+                this.setState({ errorMessage });
                 console.log("ERROR FETCHING SINGLE ROOM: \n" + err);
             });
     }
@@ -262,6 +282,7 @@ class Home extends React.Component {
             color: defaultTheme.palette.grey[400],
         };
         const { rooms, roomNav, new_room_name, errorMessage } = this.state;
+        const isCreateRoomButtonDisabled = new_room_name.trim() === '';
 
         if (roomNav && roomNav !== "None") {
             return <Redirect push to={"/dashboard/" + roomNav} />;
@@ -310,6 +331,7 @@ class Home extends React.Component {
                                     color="secondary"
                                     text="Создать комнату"
                                     onClick={(e) => this.startNewRoomClick(e)}
+                                    disabled={isCreateRoomButtonDisabled}
                                 />
                             </Box>
                         </Row>
