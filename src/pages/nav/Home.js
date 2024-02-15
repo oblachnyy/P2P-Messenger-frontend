@@ -12,6 +12,8 @@ class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            currentPage: 1,
+            roomsPerPage: 10,
             rooms: [],
             selected_rooms: [],
             currentUser: null,
@@ -23,6 +25,9 @@ class Home extends React.Component {
         this.onSelectedRoomChange = this.onSelectedRoomChange.bind(this);
         this.addFavorite = this.addFavorite.bind(this);
         this.removeFavorite = this.removeFavorite.bind(this);
+
+        this.nextPage = this.nextPage.bind(this);
+        this.previousPage = this.previousPage.bind(this);
     }
 
     handleFavoriteRequest(method, e, room_name) {
@@ -67,6 +72,43 @@ class Home extends React.Component {
 
     removeFavorite(e, room_name) {
         this.handleFavoriteRequest('remove', e, room_name);
+    }
+
+    nextPage(e){
+        console.log(this.state.currentPage);
+        this.state.currentPage++;
+        this.fetchRooms();
+        console.log(this.state.currentPage);
+    }
+
+    previousPage(e){
+        console.log(this.state.currentPage);
+        if (this.state.currentPage > 1){
+            this.state.currentPage--;
+            this.fetchRooms();
+        } else{
+            console.log("bad");
+        }
+    }
+
+    fetchRooms() {
+        let token = localStorage.getItem("token");
+        const instance = axios.create({
+            timeout: 1000,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        instance
+            .get(get_rooms, { params: { page: this.state.currentPage, limit: this.state.roomsPerPage } })
+            .then((response) => {
+                this.setState({ rooms: response.data });
+            })
+            .catch((err) => {
+                console.log("ERROR FETCHING ROOMS: \n" + err);
+            });
     }
 
     onNewRoomChange(event) {
@@ -340,6 +382,26 @@ class Home extends React.Component {
                                     {errorMessage !== "" && <p>{errorMessage}</p>}
                                 </Box>
                             </Box>
+                            <Row>
+                                <Box>
+                                    <Button
+                                        variant="solid"
+                                        color="primary"
+                                        size="small"
+                                        text="Предыдущая страница"
+                                        onClick={this.previousPage}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Button
+                                        variant="outline"
+                                        color="primary"
+                                        size="small"
+                                        text="Следующая страница"
+                                        onClick={this.nextPage}
+                                    />
+                                </Box>
+                            </Row>
                         </Box>
                     </Stack>
                 </Box>
