@@ -42,12 +42,14 @@ class ChatModule extends React.Component {
         this.state = {
             room: {},
             openVideoChat: false,
+            isLoaded: false,
             openEmoji: false,
             currentUser: this.props.user,
             message_draft: "",
             messages: [],
             members: [],
             membersCount: 0,
+            isButtonDisabled: true,
             selectedMediaFile: null,
         };
         this.checkWebSocketConnection = this.checkWebSocketConnection.bind(this);
@@ -64,6 +66,7 @@ class ChatModule extends React.Component {
         if (messageDraft.length <= 4096) {
             this.setState({
                 message_draft: messageDraft,
+                isButtonDisabled: !messageDraft.trim(),
             });
         }
     }
@@ -617,6 +620,7 @@ class ChatModule extends React.Component {
                                     size="medium"
                                     text="Send"
                                     onClick={this.onClickHandler}
+                                    disabled={this.state.isButtonDisabled}
                                 />
                             </Row>
                         </Row>
