@@ -108,6 +108,37 @@ class Home extends React.Component {
             });
     }
 
+    findRoomByName(e) {
+        const roomName = this.state.selected_room_name.trim();
+        if (roomName === "") {
+            console.log("Error: Room name cannot be empty");
+            return;
+        }
+
+        if (roomName.includes(" ")) {
+            console.log("Error: Room name cannot contain spaces");
+            return;
+        }
+
+        let token = localStorage.getItem("token");
+        const instance = axios.create({
+            timeout: 1000,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        instance.get(get_rooms + "/" + roomName)
+            .then((response) => {
+                console.log(response);
+                this.setState({ rooms: response.data })
+            })
+            .catch((error) => {
+                console.error("Error fetching room:", error);
+            });
+    }
+
     handleRoomClick(e) {
         e.preventDefault();
         let room_name = e.currentTarget.textContent;
@@ -257,6 +288,15 @@ class Home extends React.Component {
                                         value={this.state.selected_room_name}
                                         onChange={this.onSelectedRoomChange}
                                         autoComplete="off"
+                                    />
+                                </Box>
+                                <Box>
+                                    <Button
+                                        variant="outline"
+                                        size="medium"
+                                        color="secondary"
+                                        text="Поиск комнаты"
+                                        onClick={(e) => this.findRoomByName(e)}
                                     />
                                 </Box>
                             </Row>
