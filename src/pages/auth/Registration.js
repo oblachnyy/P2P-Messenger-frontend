@@ -229,7 +229,7 @@ class Registration extends React.Component {
                                 size="medium"
                                 text="Зарегистрироваться"
                                 onClick={this.registerHandler}
-                                // disabled={!this.state.isFormValid}  // Disable the button based on form validity
+                                disabled={!this.state.isEmailValid || !this.state.isUsernameValid || !this.state.isPasswordValid || this.state.email === "" || this.state.username === "" || this.state.password === ""}
                             />
                             <Button
                                 variant="outline"
