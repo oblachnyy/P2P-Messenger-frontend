@@ -14,12 +14,13 @@ class Registration extends React.Component {
             username: "",
             password: "",
             error_message: "",
-            isEmailValid: false,
-            isUsernameValid: false,
-            isPasswordValid: false,
+            warning_message: "",
+            isFormValid: false,
         };
         this.registerHandler = this.registerHandler.bind(this);
         this.clearFields = this.clearFields.bind(this);
+        this.passwordChange = this.passwordChange.bind(this);
+        this.usernameChange = this.usernameChange.bind(this);
     }
 
     clearFields = () => {
@@ -28,9 +29,8 @@ class Registration extends React.Component {
             username: "",
             password: "",
             error_message: "",
-            isEmailValid: false,
-            isUsernameValid: false,
-            isPasswordValid: false,
+            warning_message: "",
+            isFormValid: false,
         });
     };
 
@@ -43,7 +43,7 @@ class Registration extends React.Component {
             email,
             isEmailValid,
             error_message: isEmailValid ? "" : "Некорректный формат email"
-        });
+        }, this.validateForm);
     }
 
     usernameChange(e) {
@@ -55,7 +55,7 @@ class Registration extends React.Component {
             username,
             isUsernameValid,
             error_message: isUsernameValid ? "" : "Имя пользователя должно содержать от 4 до 20 символов и должно включать буквы и цифры."
-        });
+        }, this.validateForm);
     }
 
     passwordChange(e) {
@@ -67,6 +67,15 @@ class Registration extends React.Component {
             password,
             isPasswordValid,
             error_message: isPasswordValid ? "" : "Пароль должен содержать от 6 до 40 символов и может включать буквы, цифры и спец символы."
+        }, this.validateForm);
+    }
+
+    validateForm() {
+        const { isEmailValid, isUsernameValid, isPasswordValid } = this.state;
+        const isFormValid = isEmailValid && isUsernameValid && isPasswordValid;
+
+        this.setState({
+            isFormValid
         });
     }
 
@@ -114,6 +123,7 @@ class Registration extends React.Component {
             this.setState({ error_message: "Пожалуйста, введите корректные данные во все поля." });
         }
     }
+
 
     loginHandler() {
         const loginParams = new URLSearchParams();
@@ -190,7 +200,7 @@ class Registration extends React.Component {
                             <input
                                 style={input_text_style}
                                 value={this.state.email}
-                                onChange={(e) => this.setState({ email: e.target.value })}
+                                onChange={(e) => this.emailChange(e)}
                                 autoComplete="off"
                                 placeholder="Введите email"
                                 name="email"
@@ -201,7 +211,7 @@ class Registration extends React.Component {
                             <input
                                 style={input_text_style}
                                 value={this.state.username}
-                                onChange={(e) => this.setState({ username: e.target.value })}
+                                onChange={(e) => this.usernameChange(e)}
                                 autoComplete="off"
                                 placeholder="Введите имя пользователя"
                                 name="uname"
@@ -212,7 +222,7 @@ class Registration extends React.Component {
                             <input
                                 style={input_text_style}
                                 value={this.state.password}
-                                onChange={(e) => this.setState({ password: e.target.value })}
+                                onChange={(e) => this.passwordChange(e)}
                                 autoComplete="off"
                                 placeholder="Введите пароль"
                                 name="psw"
@@ -229,7 +239,7 @@ class Registration extends React.Component {
                                 size="medium"
                                 text="Зарегистрироваться"
                                 onClick={this.registerHandler}
-                                disabled={!this.state.isEmailValid || !this.state.isUsernameValid || !this.state.isPasswordValid || this.state.email === "" || this.state.username === "" || this.state.password === ""}
+                                disabled={!this.state.isFormValid}
                             />
                             <Button
                                 variant="outline"
