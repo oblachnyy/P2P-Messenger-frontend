@@ -1,5 +1,7 @@
 import React from "react";
 import { animateScroll } from "react-scroll";
+import EmojiConverter from "emoji-js";
+import EmojiPicker from "emoji-picker-react";
 import VideoCallIcon from "@material-ui/icons/VideoCall";
 import { Redirect } from "react-router-dom";
 
@@ -15,6 +17,9 @@ import { get_room, put_user_into_room } from "../api/rooms";
 import { get_user_from_token } from "../api/auth";
 import axios from "axios";
 
+var jsemoji = new EmojiConverter();
+jsemoji.replace_mode = "unified";
+jsemoji.allow_native = true;
 var client = null;
 
 function checkWebSocket(username, roomname) {
@@ -33,6 +38,7 @@ class ChatModule extends React.Component {
         this.state = {
             room: {},
             openVideoChat: false,
+            openEmoji: false,
             currentUser: this.props.user,
             message_draft: "",
             messages: [],
@@ -41,6 +47,8 @@ class ChatModule extends React.Component {
         this.onClickHandler = this.onClickHandler.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
         this.onEnterHandler = this.onEnterHandler.bind(this);
+        this.onOpenEmoji = this.onOpenEmoji.bind(this);
+        this.onEmojiSelection = this.onEmojiSelection.bind(this);
     }
 
     onInputChange(event) {
@@ -84,6 +92,28 @@ class ChatModule extends React.Component {
             containerId: "message-list",
             duration: "1ms",
         });
+    }
+
+    onOpenEmoji() {
+        let currentState = this.state.openEmoji;
+        this.setState({ openEmoji: !currentState });
+    }
+
+    onEmojiSelection(emoji_code, emoji_data) {
+        let e = emoji_data.emoji;
+        let _message =
+            this.state.message_draft === undefined ? "" : this.state.message_draft;
+        let updatedMessage = _message + e;
+
+        if (updatedMessage.length <= 4096) {
+            this.setState({
+                message_draft: updatedMessage,
+                isButtonDisabled: !updatedMessage.trim(),
+            });
+        } else {
+            console.warn("Превышен лимит символов после добавления смайлика.");
+        }
+
     }
 
     componentDidMount() {
@@ -343,6 +373,32 @@ class ChatModule extends React.Component {
                                 width="400px"
                                 style={{position: "relative"}}
                             >
+                                <Box
+                                    style={{
+                                        display: this.state.openEmoji ? "block" : "none",
+                                        position: "absolute",
+                                        bottom: "0",
+                                        left: "0",
+                                        marginBottom: "70px",
+                                    }}
+                                >
+                                    <EmojiPicker
+                                        preload
+                                        disableDiversityPicker
+                                        onEmojiClick={this.onEmojiSelection}
+                                    />
+                                </Box>
+                                <Button
+                                    variant="outline"
+                                    color="error"
+                                    size="small"
+                                    style={{
+                                        marginRight: "10px",
+                                        border: `2px solid ${defaultTheme.palette.error.main}`,
+                                    }}
+                                    onClick={this.onOpenEmoji}
+                                    text={<SentimentVerySatisfiedIcon/>}
+                                />
                                 <Button
                                     variant="outline"
                                     color="error"
