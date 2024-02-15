@@ -14,6 +14,9 @@ class Registration extends React.Component {
             username: "",
             password: "",
             error_message: "",
+            isEmailValid: false,
+            isUsernameValid: false,
+            isPasswordValid: false,
         };
         this.registerHandler = this.registerHandler.bind(this);
         this.clearFields = this.clearFields.bind(this);
@@ -25,12 +28,52 @@ class Registration extends React.Component {
             username: "",
             password: "",
             error_message: "",
+            isEmailValid: false,
+            isUsernameValid: false,
+            isPasswordValid: false,
         });
     };
 
-    registerHandler() {
-        const { username, password } = this.state;
+    emailChange(e) {
+        const email = e.target.value;
+        const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+        const isEmailValid = emailRegex.test(email);
 
+        this.setState({
+            email,
+            isEmailValid,
+            error_message: isEmailValid ? "" : "Некорректный формат email"
+        });
+    }
+
+    usernameChange(e) {
+        const username = e.target.value;
+        const usernamePattern = /^(?=.*[A-Za-zА-Яа-я])(?=.*[0-9]).{4,20}$/;
+        const isUsernameValid = usernamePattern.test(username);
+
+        this.setState({
+            username,
+            isUsernameValid,
+            error_message: isUsernameValid ? "" : "Имя пользователя должно содержать от 4 до 20 символов и должно включать буквы и цифры."
+        });
+    }
+
+    passwordChange(e) {
+        const password = e.target.value;
+        const passwordPattern = /^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{6,40}$/;
+        const isPasswordValid = passwordPattern.test(password);
+
+        this.setState({
+            password,
+            isPasswordValid,
+            error_message: isPasswordValid ? "" : "Пароль должен содержать от 6 до 40 символов и может включать буквы, цифры и спец символы."
+        });
+    }
+
+    registerHandler() {
+        const { isEmailValid, isUsernameValid, isPasswordValid } = this.state;
+
+        if (isEmailValid && isUsernameValid && isPasswordValid) {
         // Все поля валидны, выполняем запрос на регистрацию
         axios.post(registration, {
             email: this.state.email,
@@ -66,6 +109,10 @@ class Registration extends React.Component {
                     this.setState({ error_message: "Ошибка во время регистрации." });
                 }
             });
+        } else {
+            // Не все поля валидны, выполните необходимые действия
+            this.setState({ error_message: "Пожалуйста, введите корректные данные во все поля." });
+        }
     }
 
     loginHandler() {
