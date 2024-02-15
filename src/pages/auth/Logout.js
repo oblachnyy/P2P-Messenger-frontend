@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "react-router-dom";
 
 class Logout extends React.Component {
     constructor() {
@@ -19,6 +20,12 @@ class Logout extends React.Component {
     }
 
     render() {
+        const { isLogout } = this.state;
+
+        if (isLogout) {
+            return <Redirect push to="/login" />;
+        }
+
         return <div>Logging out...</div>;
     }
 }
