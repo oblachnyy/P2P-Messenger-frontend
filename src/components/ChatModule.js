@@ -1,9 +1,13 @@
 import React from "react";
 import { animateScroll } from "react-scroll";
-import EmojiConverter from "emoji-js";
 import EmojiPicker from "emoji-picker-react";
+import EmojiConverter from "emoji-js";
+import SentimentVerySatisfiedIcon from "@material-ui/icons/SentimentVerySatisfied";
 import VideoCallIcon from "@material-ui/icons/VideoCall";
+import AttachFileIcon from "@material-ui/icons/AttachFile";
 import { Redirect } from "react-router-dom";
+import Chip from "@material-ui/core/Chip";
+import Avatar from "@material-ui/core/Avatar";
 
 import {
     Box,
@@ -42,6 +46,8 @@ class ChatModule extends React.Component {
             currentUser: this.props.user,
             message_draft: "",
             messages: [],
+            members: [],
+            membersCount: 0,
             selectedMediaFile: null,
         };
         this.checkWebSocketConnection = this.checkWebSocketConnection.bind(this);
@@ -631,6 +637,24 @@ class ChatModule extends React.Component {
                             <Box>
                                 <h1>Room Members</h1>
                             </Box>
+                            {members.map((member, index) => {
+                                return (
+                                    <Box
+                                        padding="small"
+                                        color={defaultTheme.palette.common.black}
+                                        marginBottom="small"
+                                        textAlign="center"
+                                        key={index}
+                                        roundedCorners
+                                    >
+                                        <Chip
+                                            avatar={<Avatar alt="Natacha" src={member.image_url ? member.image_url : 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Anonymous.svg/1481px-Anonymous.svg.png'} />}
+                                            label={member.username}
+                                            variant="outlined"
+                                        />
+                                    </Box>
+                                );
+                            })}
                         </Stack>
                     </Box>
                 </Row>
