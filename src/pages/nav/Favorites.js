@@ -34,7 +34,6 @@ class Favorites extends React.Component {
         this.addFavorite = this.addFavorite.bind(this);
     }
 
-
     fetchRooms() {
         let token = localStorage.getItem("token");
         const instance = axios.create({
@@ -94,6 +93,42 @@ class Favorites extends React.Component {
         }
     }
 
+    handleFavoriteRequest(method, e, room_name) {
+        e.preventDefault();
+        let is_chosen = false;
+        if (method === 'add') {
+            is_chosen = true;
+        }
+        let body = {
+            "room_name": room_name,
+            "is_chosen": is_chosen
+        };
+        let token = localStorage.getItem("token");
+        const instance = axios.create({
+            timeout: 1000,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        instance
+            .post(post_favorite, body)
+            .then((response) => {
+                const updatedRooms = this.state.rooms;
+                updatedRooms.forEach(room => {
+                    if (room.room_name === room_name) {
+                        room.is_favorites = method === 'add';
+                    }
+                });
+                this.setState({rooms: updatedRooms});
+            })
+            .catch((err) => {
+                localStorage.removeItem("token");
+                console.log("ERROR FETCHING SINGLE ROOM: \n" + err);
+            });
+    }
+
     handleClick(e, room_name, index) {
         e.preventDefault();
         let token = localStorage.getItem("token");
@@ -132,11 +167,15 @@ class Favorites extends React.Component {
     }
 
     onInputChange(event) {
+        //console.log("Input: " + event.target.value);
         this.setState({ selected_room_name: event.target.value });
     }
 
     onEnterHandler = (event) => {
+        // Number 13 is the "Enter" key on the keyboard
         if (event.keyCode === 13) {
+            // Trigger the button element with a click
+
             this.startNewRoomClick(event);
         }
     };
@@ -188,6 +227,7 @@ class Favorites extends React.Component {
             .get(get_room + "/" + room_name)
             .then((response) => {
                 if (response.data) {
+                    //console.log(response.data);
                     this.setState({ roomNav: response.data.room_name });
                 }
                 console.log(response.data);
@@ -198,7 +238,10 @@ class Favorites extends React.Component {
             });
     }
 
+
     componentDidMount() {
+        // Setup redux and snag the current user and bring them into state
+        // Fetch all rooms (need to setup credentials from current user)
         let token = localStorage.getItem("token");
         const instance = axios.create({
             timeout: 1000,
@@ -220,6 +263,7 @@ class Favorites extends React.Component {
                         this.setState({ rooms: response.data });
                     })
                     .catch((err) => {
+                        // clear token just in case
                         localStorage.removeItem("token");
                         console.log("ERROR FETCHING ROOMS: \n" + err);
                     });
@@ -229,6 +273,7 @@ class Favorites extends React.Component {
                 console.log("ERROR FETCHING CURRENT USER\n" + err);
             });
     }
+
 
     render() {
         const input_text_style = {
@@ -244,9 +289,9 @@ class Favorites extends React.Component {
             fontFamily: defaultTheme.typography.primaryFontFamily,
             color: defaultTheme.palette.grey[400],
         };
-        const { rooms, roomNav } = this.state;
+        const {rooms, roomNav, user} = this.state;
         if (roomNav && roomNav !== "None") {
-            return <Redirect push to={"/dashboard/" + roomNav} />;
+            return <Redirect push to={"/dashboard/" + roomNav}/>;
         } else {
             return (
                 <Box
@@ -274,7 +319,7 @@ class Favorites extends React.Component {
                             justifyContent="center"
                             alignItems="center"
                             textAlign="center"
-                            style={{ margin: "auto" }}
+                            style={{margin: "auto"}}
                         >
                             <Box>
                                 <input
@@ -299,26 +344,66 @@ class Favorites extends React.Component {
                         <Box>
                             <h1>Список комнат</h1>
                             <Stack space="medium">
-                                {rooms.map((room, index) => (
-                                    <Box margin="20px" key={room.id}>
-                                        <Chip
-                                            style={{ backgroundColor: room.is_owner ? "orange" : null }}
-                                            label={room.room_name}
-                                            onClick={(e) => this.handleRoomClick(e)}
-                                            onDelete={(e) => (room.is_favorites ? this.removeFavorite(e, room.room_name) : this.addFavorite(e, room.room_name))}
-                                            deleteIcon={<FavoriteBorderIcon />}
-                                        />
-                                        {room.is_owner && (
-                                            <Button
-                                                variant="outline"
-                                                color="secondary"
-                                                size="small"
-                                                text="Удалить"
-                                                onClick={(e) => this.removeFavorite(e, room.room_name)}
-                                            />
-                                        )}
-                                    </Box>
-                                ))}
+                                {rooms.map((room, index) => {
+                                    if (room.is_favorites === true) {
+                                        if (room.is_owner === true){
+                                            return (
+                                                <Box margin="small" key={room.id}>
+                                                    <Chip
+                                                        style={{backgroundColor: room.is_owner ? "orange" : null}}
+                                                        icon={FavoriteIcon}
+                                                        onClick={(e) => this.handleRoomClick(e)}
+                                                        label={room.room_name}
+                                                        id={room.room_name}
+                                                        onDelete={(e) =>
+                                                            this.removeFavorite(e, room.room_name)
+                                                        }
+                                                        deleteIcon={<FavoriteIcon />}
+                                                    />
+                                                    <Chip
+                                                        label="Удалить"
+                                                        style={{backgroundColor: room.is_owner ? "orange" : null}}
+                                                        variant="outlined"
+                                                        id={room.room_name}
+                                                        onDelete={(e) =>
+                                                            this.handleClick(e, room.room_name, index)
+                                                        }
+                                                    />
+                                                </Box>
+                                            );
+                                        } else{
+                                            return (
+                                                <Box margin="small" key={room.id}>
+                                                    <Chip
+                                                        style={{backgroundColor: room.is_owner ? "orange" : null}}
+                                                        icon={FavoriteIcon}
+                                                        onClick={(e) => this.handleRoomClick(e)}
+                                                        label={room.room_name}
+                                                        id={room.room_name}
+                                                        onDelete={(e) =>
+                                                            this.removeFavorite(e, room.room_name)
+                                                        }
+                                                        deleteIcon={<FavoriteIcon />}
+                                                    />
+                                                </Box>
+                                            );
+                                        }
+                                    } else {
+                                        return (
+                                            <Box margin="20px" key={room.id}>
+                                                <Chip
+                                                    style={{backgroundColor: room.is_owner ? "orange" : null}}
+                                                    icon={FavoriteBorderIcon}
+                                                    onClick={(e) => this.handleRoomClick(e)}
+                                                    label={room.room_name}
+                                                    id={room.room_name}
+                                                    onDelete={(e) => this.addFavorite(e, room.room_name)}
+                                                    deleteIcon={<FavoriteBorderIcon />}
+                                                />
+                                            </Box>
+                                        );
+                                    }
+                                })}
                             </Stack>
                             <Row>
                                 <Box>
@@ -347,5 +432,6 @@ class Favorites extends React.Component {
         }
     }
 }
+
 
 export default Favorites;
