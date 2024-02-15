@@ -24,6 +24,7 @@ class Favorites extends React.Component {
         this.nextPage = this.nextPage.bind(this);
         this.previousPage = this.previousPage.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.removeFavorite = this.removeFavorite.bind(this);
     }
 
     fetchRooms() {
@@ -65,6 +66,33 @@ class Favorites extends React.Component {
         }
     }
 
+    removeFavorite(e, room_name) {
+        e.preventDefault();
+        let body = {
+            "room_name": room_name,
+            "is_chosen": false
+        };
+        let token = localStorage.getItem("token");
+        const instance = axios.create({
+            timeout: 1000,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        instance
+            .post(post_favorite, body)
+            .then((response) => {
+                const updatedRooms = this.state.rooms.filter(room => room.room_name !== room_name);
+                this.setState({ rooms: updatedRooms });
+            })
+            .catch((err) => {
+                localStorage.removeItem("token");
+                console.log("ERROR REMOVING FAVORITE: \n" + err);
+            });
+    }
+
     onInputChange(event) {
         this.setState({ selected_room_name: event.target.value });
     }
@@ -74,6 +102,31 @@ class Favorites extends React.Component {
             this.startNewRoomClick(event);
         }
     };
+
+    handleClick(e, room_name, index) {
+        e.preventDefault();
+        let token = localStorage.getItem("token");
+        const instance = axios.create({
+            timeout: 1000,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const updatedRooms = this.state.rooms.filter(room => room.room_name !== room_name);
+        this.setState({ rooms: updatedRooms });
+
+        instance.delete(get_room + "/" + room_name)
+            .then(() => {
+                console.log("Delete room");
+                this.fetchRooms()
+            })
+            .catch((error) => {
+                console.error("Error fetching room:", error);
+            });
+    }
 
     findRoomByName(e) {
         const roomName = this.state.selected_room_name.trim();
@@ -236,9 +289,21 @@ class Favorites extends React.Component {
                                 {rooms.map((room, index) => (
                                     <Box margin="20px" key={room.id}>
                                         <Chip
+                                            style={{ backgroundColor: room.is_owner ? "orange" : null }}
                                             label={room.room_name}
                                             onClick={(e) => this.handleRoomClick(e)}
+                                            onDelete={(e) => (room.is_favorites ? this.removeFavorite(e, room.room_name) : this.addFavorite(e, room.room_name))}
+                                            deleteIcon={<FavoriteBorderIcon />}
                                         />
+                                        {room.is_owner && (
+                                            <Button
+                                                variant="outline"
+                                                color="secondary"
+                                                size="small"
+                                                text="Удалить"
+                                                onClick={(e) => this.removeFavorite(e, room.room_name)}
+                                            />
+                                        )}
                                     </Box>
                                 ))}
                             </Stack>
