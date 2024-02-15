@@ -5,6 +5,7 @@ import Login from "./pages/auth/Login";
 import Home from "./pages/nav/Home";
 import Logout from "./pages/auth/Logout";
 import Registration from "./pages/auth/Registration";
+import Favorites from "./pages/nav/Favorites";
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
                 <ProtectedRoute path="/home" page={Home}/>
                 <Route path="/logout" component={Logout}/>
                 <Route path="/registration" component={Registration}/>
+                <ProtectedRoute path="/favorites" page={Favorites}/>
 
             </Switch>
         </div>
