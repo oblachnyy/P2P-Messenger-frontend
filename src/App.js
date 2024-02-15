@@ -19,6 +19,7 @@ function App() {
                 <Route path="/logout" component={Logout}/>
                 <Route path="/registration" component={Registration}/>
                 <ProtectedRoute path="/favorites" page={Favorites}/>
+                <Redirect from="/" to="/login" />
 
             </Switch>
         </div>
