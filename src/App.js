@@ -6,6 +6,7 @@ import Home from "./pages/nav/Home";
 import Logout from "./pages/auth/Logout";
 import Registration from "./pages/auth/Registration";
 import Favorites from "./pages/nav/Favorites";
+import VideoChatPage from "./pages/chat/VideoChatPage";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
                 <Route path="/logout" component={Logout}/>
                 <Route path="/registration" component={Registration}/>
                 <ProtectedRoute path="/favorites" page={Favorites}/>
+                <ProtectedRoute path="/video/" page={VideoChatPage}/>
                 <Redirect from="/" to="/login" />
 
             </Switch>
