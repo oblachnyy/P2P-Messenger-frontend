@@ -8,14 +8,18 @@ import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
 import Chip from "@material-ui/core/Chip";
 import {Box, Button, defaultTheme, fontSizes, Row, Stack,} from "luxor-component-library";
 import {Redirect} from "react-router-dom";
+
 class Favorites extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             currentPage: 1,
             roomsPerPage: 10,
+            globalIndex: -1,
             rooms: [],
             currentUser: null,
+            room_id: null,
+            is_owner: false,
             roomNav: false,
             selected_room_name: "",
         };
@@ -23,9 +27,13 @@ class Favorites extends React.Component {
         this.onEnterHandler = this.onEnterHandler.bind(this);
         this.nextPage = this.nextPage.bind(this);
         this.previousPage = this.previousPage.bind(this);
+
         this.handleClick = this.handleClick.bind(this);
         this.removeFavorite = this.removeFavorite.bind(this);
+
+        this.addFavorite = this.addFavorite.bind(this);
     }
+
 
     fetchRooms() {
         let token = localStorage.getItem("token");
@@ -47,61 +55,44 @@ class Favorites extends React.Component {
             });
     }
 
-    nextPage(e) {
-        console.log(this.state.currentPage);
-        this.setState(prevState => ({
-            currentPage: prevState.currentPage + 1
-        }), () => this.fetchRooms());
-        console.log(this.state.currentPage);
-    }
-
-    previousPage(e) {
-        console.log(this.state.currentPage);
-        if (this.state.currentPage > 1) {
-            this.setState(prevState => ({
-                currentPage: prevState.currentPage - 1
-            }), () => this.fetchRooms());
-        } else {
-            console.log("bad");
-        }
-    }
-
-    removeFavorite(e, room_name) {
+    searchRooms(e) {
         e.preventDefault();
-        let body = {
-            "room_name": room_name,
-            "is_chosen": false
-        };
+        let room_name = e.currentTarget.textContent;
         let token = localStorage.getItem("token");
         const instance = axios.create({
             timeout: 1000,
             headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
+                "Access-Control-Allow-Origin": "*",
                 Authorization: `Bearer ${token}`,
             },
         });
+
         instance
-            .post(post_favorite, body)
+            .get(get_favorite + "/" + room_name, { params: { page: this.state.currentPage, limit: this.state.roomsPerPage } })
             .then((response) => {
-                const updatedRooms = this.state.rooms.filter(room => room.room_name !== room_name);
-                this.setState({ rooms: updatedRooms });
+                this.setState({ rooms: response.data });
             })
             .catch((err) => {
-                localStorage.removeItem("token");
-                console.log("ERROR REMOVING FAVORITE: \n" + err);
+                console.log("ERROR FETCHING ROOMS: \n" + err);
             });
     }
 
-    onInputChange(event) {
-        this.setState({ selected_room_name: event.target.value });
+    nextPage(e){
+        console.log(this.state.currentPage);
+        this.state.currentPage++;
+        this.fetchRooms();
+        console.log(this.state.currentPage);
     }
 
-    onEnterHandler = (event) => {
-        if (event.keyCode === 13) {
-            this.startNewRoomClick(event);
+    previousPage(e){
+        console.log(this.state.currentPage);
+        if (this.state.currentPage > 1){
+            this.state.currentPage--;
+            this.fetchRooms();
+        } else{
+            console.log("bad");
         }
-    };
+    }
 
     handleClick(e, room_name, index) {
         e.preventDefault();
@@ -115,7 +106,10 @@ class Favorites extends React.Component {
             },
         });
 
+        // Создаем новый массив, исключая удаляемую комнату
         const updatedRooms = this.state.rooms.filter(room => room.room_name !== room_name);
+
+        // Обновляем состояние новым массивом
         this.setState({ rooms: updatedRooms });
 
         instance.delete(get_room + "/" + room_name)
@@ -127,6 +121,25 @@ class Favorites extends React.Component {
                 console.error("Error fetching room:", error);
             });
     }
+
+
+    addFavorite(e, room_name) {
+        this.handleFavoriteRequest('add', e, room_name);
+    }
+
+    removeFavorite(e, room_name) {
+        this.handleFavoriteRequest('remove', e, room_name);
+    }
+
+    onInputChange(event) {
+        this.setState({ selected_room_name: event.target.value });
+    }
+
+    onEnterHandler = (event) => {
+        if (event.keyCode === 13) {
+            this.startNewRoomClick(event);
+        }
+    };
 
     findRoomByName(e) {
         const roomName = this.state.selected_room_name.trim();
