@@ -62,7 +62,15 @@ class Profile extends React.Component {
             errorMessage: "",
         });
 
-        this.setState({ new_username });
+        const pattern = /^(?=.*[A-Za-zА-Яа-я])(?=.*[0-9]).{4,20}$/;
+
+        if (
+            new_username.length >= 4 &&
+            new_username.length <= 20 &&
+            pattern.test(new_username)
+        ) {
+            this.setState({ new_username });
+        }
     }
 
     onEmailChange(e) {
@@ -75,8 +83,13 @@ class Profile extends React.Component {
             errorMessage: "",
         });
 
-        this.setState({ new_email });
+        const pattern = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
 
+        if (
+            pattern.test(new_email)
+        ) {
+            this.setState({ new_email });
+        }
     }
 
     toggleEditMode() {
@@ -101,8 +114,15 @@ class Profile extends React.Component {
             errorMessage: "",
         });
 
-        this.setState({ new_password });
+        const pattern = /^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+$/;
 
+        if (
+            new_password.length >= 6 &&
+            new_password.length <= 40 &&
+            pattern.test(new_password)
+        ) {
+            this.setState({ new_password });
+        }
     }
 
     onEnterHandler(e) {
@@ -123,6 +143,9 @@ class Profile extends React.Component {
             this.setState({ errorMessage });
             return;
         }
+
+        // В этом месте добавлены условия для проверки валидности ФИО перед сохранением изменений
+        const namePattern = /^[a-zA-ZА-Яа-я]+$/;
 
         if (
             !namePattern.test(this.state.last_name) ||
