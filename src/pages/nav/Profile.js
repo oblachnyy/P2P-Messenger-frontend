@@ -405,6 +405,9 @@ class Profile extends React.Component {
                                     text={isEditMode ? "Отменить" : "Изменить данные"}
                                     style={{ width: "150px", height: "35px" }}
                                 />
+                                <Box color="red" padding="small">
+                                    {errorMessage !== "" && <p>{errorMessage}</p>}
+                                </Box>
                             </Stack>
                         </Box>
                     </Row>
