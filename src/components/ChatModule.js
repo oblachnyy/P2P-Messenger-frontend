@@ -42,6 +42,7 @@ class ChatModule extends React.Component {
             currentUser: this.props.user,
             message_draft: "",
             messages: [],
+            selectedMediaFile: null,
         };
         this.checkWebSocketConnection = this.checkWebSocketConnection.bind(this);
         this.onClickHandler = this.onClickHandler.bind(this);
@@ -49,6 +50,7 @@ class ChatModule extends React.Component {
         this.onEnterHandler = this.onEnterHandler.bind(this);
         this.onOpenEmoji = this.onOpenEmoji.bind(this);
         this.onEmojiSelection = this.onEmojiSelection.bind(this);
+        this.onAttachFile = this.onAttachFile.bind(this);
     }
 
     onInputChange(event) {
@@ -114,6 +116,128 @@ class ChatModule extends React.Component {
             console.warn("Превышен лимит символов после добавления смайлика.");
         }
 
+    }
+
+    checkImageSize(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const width = img.width;
+                const height = img.height;
+
+                // Проверка на минимальное разрешение 100x100 пикселей
+                if (width < 100 || height < 100) {
+                    this.showError("Разрешение изображения должно быть не менее 100x100 пикселей.");
+                    reject("Разрешение изображения должно быть не менее 100x100 пикселей.");
+                }
+
+                // Проверка на максимальное разрешение 2048x2048 пикселей
+                if (width > 2048 || height > 2048) {
+                    this.showError("Разрешение изображения не должно превышать 2к пикселей");
+                    reject("Разрешение изображения не должно превышать 2к пикселей");
+                }
+
+                resolve();
+            };
+            img.onerror = () => {
+                this.showError("Ошибка при загрузки изображения.");
+                reject("Ошибка при загрузки изображения.");
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    onAttachFile = async () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = ".jpg,.png,.jpeg,.webp,.gif,.mp4,.avi,.webm,.mp3,.wav";
+        const maxAudioFileSize = 8 * 1024 * 1024; // 8 MB
+        const maxImageFileSize = 10 * 1024 * 1024; // 10 MB
+        const maxVideoFileSize = 50 * 1024 * 1024; // 50 MB
+
+        fileInput.addEventListener("change", async (e) => {
+            const files = e.target.files;
+            const selectedFile = files[0];
+            if (selectedFile) {
+                try {
+                    const fileType = e.target.files[0].type;
+                    const fileSize = selectedFile.size;
+                    // Проверка на разрешенный MIME-тип
+                    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/avi', 'video/webm', 'audio/mp3', 'audio/wav', 'audio/mpeg'];
+                    if (!allowedMimeTypes.includes(fileType)) {
+                        this.showError('Неразрешенный тип файла.');
+                        console.log('Фактический MIME-тип файла:', fileType);
+                        return;
+                    }
+
+                    if (selectedFile.type.startsWith('audio/') && fileSize > maxAudioFileSize) {
+                        this.showError('Размер аудиофайла превышает максимально допустимый размер (8 MB).');
+                        return;
+                    }
+
+                    if (selectedFile.type.startsWith('video/') && fileSize > maxVideoFileSize) {
+                        this.showError('Размер видео превышает максимально допустимый размер (50 MB).');
+                        return;
+                    }
+
+                    if (selectedFile.type.startsWith('image/') && fileSize > maxImageFileSize) {
+                        this.showError('Размер изображения превышает максимально допустимый размер (10 MB).');
+                        return;
+                    }
+
+                    if (selectedFile.type.startsWith("image/")) {
+                        await this.checkImageSize(selectedFile);
+                    }
+
+                    if (selectedFile.type.startsWith("video/")) {
+                        this.isVideoFormatAllowed(selectedFile).then((isAllowed) => {
+                            if (!isAllowed) {
+                                this.showError("Данный формат видео не поддерживается");
+                            }
+                            else{
+                                this.setState({ selectedMediaFile: selectedFile, isButtonDisabled: false });
+                            }
+                        });
+                    }
+                    else{
+                        this.setState({ selectedMediaFile: selectedFile, isButtonDisabled: false });
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+
+        fileInput.click();
+    }
+
+    showError(message) {
+        alert('Ошибка: ' + message);
+    }
+
+    isVideoFormatAllowed(file) {
+        const allowedFormats = ["1:1", "4:3", "16:9", "16:10"];
+
+        return new Promise((resolve) => {
+            const video = document.createElement("video");
+            video.src = URL.createObjectURL(file);
+
+            video.onloadedmetadata = () => {
+                const width = video.videoWidth;
+                const height = video.videoHeight;
+
+                // Рассчитываем соотношение сторон
+                const aspectRatio = width / height;
+
+                // Проверяем, разрешено ли соотношение сторон
+                const isAllowed = allowedFormats.some((format) => {
+                    const [allowedWidth, allowedHeight] = format.split(":").map(Number);
+                    return Math.abs((width / height) - (allowedWidth / allowedHeight)) < 0.01;
+                });
+
+                resolve(isAllowed);
+            };
+        });
     }
 
     componentDidMount() {
@@ -230,8 +354,38 @@ class ChatModule extends React.Component {
         const input = this.state.message_draft;
 
         if (input.trim().length > 0 || this.state.selectedMediaFile) {
+            if (this.state.selectedMediaFile) {
+                this.handleMediaFile(input);
+            } else {
+                const messageObj = {
+                    message: input,
+                    user: { username: this.state.currentUser },
+                    room_name: this.state.room_name,
+                };
+
+                if (client !== null && client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(messageObj));
+                    this.setState({ message_draft: "", isButtonDisabled: true, selectedMediaFile: null }, this.scrollToBottom);
+                } else {
+                    client = checkWebSocket(this.state.currentUser, this.state.room_name);
+                    client.send(JSON.stringify(messageObj));
+                    this.setState({ message_draft: "", isButtonDisabled: true, selectedMediaFile: null }, this.scrollToBottom);
+                }
+            }
+        }
+    }
+
+    handleMediaFile(message) {
+        const selectedFile = this.state.selectedMediaFile;
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+            const base64Data = event.target.result.split(',')[1];
             const messageObj = {
-                message: input,
+                type: "file",
+                content: base64Data,
+                message: message,
+                fileType: selectedFile.type,
                 user: { username: this.state.currentUser },
                 room_name: this.state.room_name,
             };
@@ -244,8 +398,11 @@ class ChatModule extends React.Component {
                 client.send(JSON.stringify(messageObj));
                 this.setState({ message_draft: "", isButtonDisabled: true, selectedMediaFile: null }, this.scrollToBottom);
             }
-        }
+        };
+
+        reader.readAsDataURL(selectedFile);
     }
+
     render() {
         const input_text_style = {
             padding: "10px",
@@ -307,6 +464,27 @@ class ChatModule extends React.Component {
                                             }}
                                             key={index}
                                         >
+                                            {message.media_file_url ? (
+                                                message.media_file_url.endsWith(".mp4") ? (
+                                                    <div>
+                                                        <video controls style={{ maxWidth: "200px", maxHeight: "200px" }}>
+                                                            <source src={message.media_file_url} type="video/mp4" />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </div>
+                                                ) : message.media_file_url.endsWith(".mp3") ? (
+                                                    <div>
+                                                        <audio controls>
+                                                            <source src={message.media_file_url} type="audio/mpeg" />
+                                                            Your browser does not support the audio tag.
+                                                        </audio>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <img src={message.media_file_url} alt="uploaded file" style={{ maxWidth: "250px", maxHeight: "250px" }} />
+                                                    </div>
+                                                )
+                                            ) : null}
                                             {message.message.trim() !== '' && (
                                                 <Box
                                                     marginX="large"
@@ -388,6 +566,24 @@ class ChatModule extends React.Component {
                                         onEmojiClick={this.onEmojiSelection}
                                     />
                                 </Box>
+                                <div style={{display: "flex", alignItems: "center", flexWrap: "wrap"}}>
+                                    {this.state.selectedMediaFile && (
+                                        <div style={{marginRight: "5px"}}>
+                                            {this.state.selectedMediaFile.name}
+                                        </div>
+                                    )}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    color="error"
+                                    size="small"
+                                    style={{
+                                        marginRight: "10px",
+                                        border: `2px solid ${defaultTheme.palette.error.main}`,
+                                    }}
+                                    onClick={this.onAttachFile}
+                                    text={<AttachFileIcon/>}
+                                />
                                 <Button
                                     variant="outline"
                                     color="error"
@@ -442,4 +638,5 @@ class ChatModule extends React.Component {
         }
     }
 }
-export { ChatModule };
+
+export {ChatModule};
