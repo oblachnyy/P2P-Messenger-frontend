@@ -7,7 +7,9 @@ import Logout from "./pages/auth/Logout";
 import Registration from "./pages/auth/Registration";
 import Favorites from "./pages/nav/Favorites";
 import VideoChatPage from "./pages/chat/VideoChatPage";
+import Profile from "./pages/nav/Profile";
 import Dashboard from "./pages/chat/Dashboard";
+
 
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
                 <ProtectedRoute path="/favorites" page={Favorites}/>
                 <ProtectedRoute path="/video/" page={VideoChatPage}/>
                 <Redirect from="/" to="/login" />
+                <ProtectedRoute path="/profile" page={Profile}/>
 
             </Switch>
         </div>
