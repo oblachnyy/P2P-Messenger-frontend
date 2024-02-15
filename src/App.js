@@ -7,6 +7,7 @@ import Logout from "./pages/auth/Logout";
 import Registration from "./pages/auth/Registration";
 import Favorites from "./pages/nav/Favorites";
 import VideoChatPage from "./pages/chat/VideoChatPage";
+import Dashboard from "./pages/chat/Dashboard";
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <div className="app">
           <NavBar/>
             <Switch>
+                <ProtectedRoute path="/dashboard" page={Dashboard}/>
                 <Route path="/login" component={Login}/>
                 <ProtectedRoute path="/home" page={Home}/>
                 <Route path="/logout" component={Logout}/>
