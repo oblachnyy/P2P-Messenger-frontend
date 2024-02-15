@@ -396,6 +396,11 @@ class Profile extends React.Component {
                                 />
                                 <Button
                                     size="small"
+                                    onClick={this.toggleAvatarEditMode}
+                                    text={"Изменить аватарку"}
+                                />
+                                <Button
+                                    size="small"
                                     onClick={this.toggleEditMode}
                                     text={isEditMode ? "Отменить" : "Изменить данные"}
                                     style={{ width: "150px", height: "35px" }}
