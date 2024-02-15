@@ -58,6 +58,7 @@ class ChatModule extends React.Component {
         this.onEnterHandler = this.onEnterHandler.bind(this);
         this.onOpenEmoji = this.onOpenEmoji.bind(this);
         this.onEmojiSelection = this.onEmojiSelection.bind(this);
+        this.onOpenVideoChat = this.onOpenVideoChat.bind(this);
         this.onAttachFile = this.onAttachFile.bind(this);
     }
 
@@ -97,6 +98,12 @@ class ChatModule extends React.Component {
             client.send(JSON.stringify(messageObj));
         }
     };
+
+    onOpenVideoChat() {
+        const waitingMessage = "Пользователь ожидает в видеочате. Пожалуйста, подключитесь!";
+        this.sendMessageToChat(waitingMessage);
+        this.setState({ openVideoChat: true });
+    }
 
     scrollToBottom() {
         animateScroll.scrollToBottom({
@@ -612,6 +619,7 @@ class ChatModule extends React.Component {
                                         marginRight: "10px",
                                         border: `2px solid ${defaultTheme.palette.error.main}`,
                                     }}
+                                    onClick={this.onOpenVideoChat}
                                     text={<VideoCallIcon/>}
                                 />
                                 <Button
