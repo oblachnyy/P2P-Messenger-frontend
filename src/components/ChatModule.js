@@ -518,6 +518,8 @@ class ChatModule extends React.Component {
                                                             message.user.username === this.state.currentUser
                                                                 ? "right"
                                                                 : "left",
+                                                        maxWidth: "80%",
+                                                        wordWrap: "break-word",
                                                     }}
                                                     textAlign={
                                                         message.user.username === this.state.currentUser
