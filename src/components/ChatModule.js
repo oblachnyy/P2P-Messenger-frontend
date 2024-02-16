@@ -259,7 +259,7 @@ class ChatModule extends React.Component {
     componentDidMount() {
         let token = localStorage.getItem("token");
         const instance = axios.create({
-            timeout: 1000,
+            timeout: 10000,
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 Authorization: `Bearer ${token}`,
