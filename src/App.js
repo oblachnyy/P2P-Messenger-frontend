@@ -12,7 +12,6 @@ import Profile from "./pages/nav/Profile";
 import Dashboard from "./pages/chat/Dashboard";
 
 
-
 function App() {
   return (
       <BrowserRouter>
@@ -20,14 +19,14 @@ function App() {
           <NavBar/>
             <Switch>
                 <ProtectedRoute path="/dashboard" page={Dashboard}/>
-                <Route path="/login" component={Login}/>
-                <ProtectedRoute path="/home" page={Home}/>
-                <Route path="/logout" component={Logout}/>
-                <Route path="/registration" component={Registration}/>
                 <ProtectedRoute path="/favorites" page={Favorites}/>
                 <ProtectedRoute path="/video/" page={VideoChatPage}/>
-                <Redirect from="/" to="/login" />
                 <ProtectedRoute path="/profile" page={Profile}/>
+                <Route path="/registration" component={Registration}/>
+                <Route path="/login" component={Login}/>
+                <Route path="/logout" component={Logout}/>
+                <ProtectedRoute path="/home" page={Home}/>
+                <Redirect from="/" to="/login" />
 
             </Switch>
         </div>
