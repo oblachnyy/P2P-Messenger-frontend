@@ -163,7 +163,6 @@ class Profile extends React.Component {
             return;
         }
 
-
         let body = {
             email: this.state.new_email,
             username: this.state.new_username,

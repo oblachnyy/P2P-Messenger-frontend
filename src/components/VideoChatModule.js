@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from "react";
 import {MeetingProvider, useMeeting, useParticipant} from "@videosdk.live/react-sdk";
 import ReactPlayer from "react-player";
 
-const ParticipantView = ({participantId}) => {
+export const ParticipantView = ({participantId}) => {
     const micRef = useRef(null);
     const {webcamStream, micStream, webcamOn, micOn, isLocal} = useParticipant(participantId);
 
@@ -15,23 +15,27 @@ const ParticipantView = ({participantId}) => {
     }, [webcamStream, webcamOn]);
 
     useEffect(() => {
-        if (micRef.current) {
-            if (micOn && micStream) {
-                const mediaStream = new MediaStream();
-                mediaStream.addTrack(micStream.track);
+        if (micRef.current && micOn && micStream) {
+            const mediaStream = new MediaStream();
+            mediaStream.addTrack(micStream.track);
 
-                micRef.current.srcObject = mediaStream;
-                micRef.current
-                    .play()
-                    .catch((error) => console.error("videoElem.current.play() failed", error));
-            } else {
-                micRef.current.srcObject = null;
+            micRef.current.srcObject = mediaStream;
+
+            // Check if micRef.current.play is defined before calling it
+            if (micRef.current.play) {
+                micRef.current.play().then(() => {
+                    // Playback successful
+                }).catch((error) => {
+                    console.error("micRef.current.play() failed", error);
+                });
             }
+        } else {
+            micRef.current.srcObject = null;
         }
     }, [micStream, micOn]);
 
     return (
-        <div>
+        <div className="participant-view">
             <audio ref={micRef} autoPlay playsInline muted={isLocal}/>
             {webcamOn && (
                 <ReactPlayer
@@ -53,7 +57,7 @@ const ParticipantView = ({participantId}) => {
     );
 };
 
-const MeetingView = () => {
+export const MeetingView = () => {
     const [joined, setJoined] = useState(null);
     const {join, participants} = useMeeting({
         onMeetingJoined: () => {

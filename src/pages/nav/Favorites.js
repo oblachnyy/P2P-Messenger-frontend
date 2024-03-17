@@ -54,28 +54,6 @@ class Favorites extends React.Component {
             });
     }
 
-    searchRooms(e) {
-        e.preventDefault();
-        let room_name = e.currentTarget.textContent;
-        let token = localStorage.getItem("token");
-        const instance = axios.create({
-            timeout: 1000,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        instance
-            .get(get_favorite + "/" + room_name, { params: { page: this.state.currentPage, limit: this.state.roomsPerPage } })
-            .then((response) => {
-                this.setState({ rooms: response.data });
-            })
-            .catch((err) => {
-                console.log("ERROR FETCHING ROOMS: \n" + err);
-            });
-    }
-
     nextPage(e){
         console.log(this.state.currentPage);
         this.state.currentPage++;
@@ -203,8 +181,8 @@ class Favorites extends React.Component {
         });
         instance.get(get_favorite + "/" + roomName, { params: { page: this.state.currentPage, limit: this.state.roomsPerPage } })
             .then((response) => {
-                console.log(response);
-                this.setState({ rooms: response.data })
+                console.log(response.data);
+                this.setState({ rooms: response.data });
             })
             .catch((error) => {
                 console.error("Error fetching room:", error);
@@ -349,7 +327,7 @@ class Favorites extends React.Component {
                                         if (room.is_owner === true){
                                             return (
                                                 <Box margin="small" key={room.id}>
-                                                    <Chip
+                                                    <Chip data-testid="chip-component"
                                                         style={{backgroundColor: room.is_owner ? "orange" : null}}
                                                         icon={FavoriteIcon}
                                                         onClick={(e) => this.handleRoomClick(e)}

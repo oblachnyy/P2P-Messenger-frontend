@@ -1,6 +1,6 @@
 import React from "react";
 import axios from 'axios';
-import { Redirect } from "react-router-dom";
+import { Redirect, BrowserRouter as Router } from "react-router-dom";
 import { Box, Button, defaultTheme, fontSizes, Row, Stack } from "luxor-component-library";
 import { login, registration } from "../../api/auth";
 
@@ -83,41 +83,38 @@ class Registration extends React.Component {
         const { isEmailValid, isUsernameValid, isPasswordValid } = this.state;
 
         if (isEmailValid && isUsernameValid && isPasswordValid) {
-        // Все поля валидны, выполняем запрос на регистрацию
-        axios.post(registration, {
-            email: this.state.email,
-            password: this.state.password,
-            is_active: true,
-            is_superuser: false,
-            is_verified: false,
-            username: this.state.username
-        }, {
-            headers: {
-                'accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-            .then((response) => {
-                console.log(response.data);
-                if (response.status === 201) {
-                    this.setState({ isRegisteredIn: true });
-                    this.loginHandler();
-                } else {
-                    this.setState({ error_message: "Please try again." });
+            // Все поля валидны, выполняем запрос на регистрацию
+            axios.post(registration, {
+                email: this.state.email,
+                password: this.state.password,
+                is_active: true,
+                is_superuser: false,
+                is_verified: false,
+                username: this.state.username
+            }, {
+                headers: {
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch((error) => {
-                // Обработка ошибок
-                if (error.response && error.response.status === 400) {
-                    console.log(error.response.data);
-                    if (error.response.data.detail === "REGISTER_USER_ALREADY_EXISTS") {
-                        this.setState({ error_message: "Пользователь с таким email существует." });
+                .then((response) => {
+                    if (response.status === 201) {
+                        this.setState({ isRegisteredIn: true });
+                        this.loginHandler();
                     }
-                } else {
-                    console.log(error);
-                    this.setState({ error_message: "Ошибка во время регистрации." });
-                }
-            });
+                })
+                .catch((error) => {
+                    // Обработка ошибок
+                    if (error.response && error.response.status === 400) {
+                        console.log(error.response.data);
+                        if (error.response.data.detail === "REGISTER_USER_ALREADY_EXISTS") {
+                            this.setState({ error_message: "Пользователь с таким email существует." });
+                        }
+                    } else {
+                        console.log(error);
+                        this.setState({ error_message: "Ошибка во время регистрации." });
+                    }
+                });
         } else {
             // Не все поля валидны, выполните необходимые действия
             this.setState({ error_message: "Пожалуйста, введите корректные данные во все поля." });

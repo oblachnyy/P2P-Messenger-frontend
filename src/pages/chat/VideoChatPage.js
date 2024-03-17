@@ -50,6 +50,7 @@ class VideoChatPage extends React.Component {
                     paddingBottom="none"
                     height="100vh"
                     backgroundColor={defaultTheme.palette.secondary.light}
+                    data-testid="container"
                 >
                     <Row>
                         <Stack>
