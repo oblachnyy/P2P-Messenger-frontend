@@ -91,12 +91,16 @@ class ChatModule extends React.Component {
             room_name: this.state.room_name,
         };
 
-        if (client !== null) {
-            client.send(JSON.stringify(messageObj));
-        } else {
-            client = checkWebSocket(this.state.currentUser, this.state.room_name);
-            client.send(JSON.stringify(messageObj));
-        }
+        const sendHelper = (client) => {
+            if (client !== null && client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(messageObj));
+            } else {
+                client = checkWebSocket(this.state.currentUser, this.state.room_name);
+                client.send(JSON.stringify(messageObj));
+            }
+        };
+
+        sendHelper(this.state.client);
     };
 
     onOpenVideoChat() {
@@ -379,13 +383,12 @@ class ChatModule extends React.Component {
                     room_name: this.state.room_name,
                 };
 
-                if (client !== null && client.readyState === WebSocket.OPEN) {
+                client = checkWebSocket(this.state.currentUser, this.state.room_name);
+                if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify(messageObj));
                     this.setState({ message_draft: "", isButtonDisabled: true, selectedMediaFile: null }, this.scrollToBottom);
                 } else {
-                    client = checkWebSocket(this.state.currentUser, this.state.room_name);
-                    client.send(JSON.stringify(messageObj));
-                    this.setState({ message_draft: "", isButtonDisabled: true, selectedMediaFile: null }, this.scrollToBottom);
+                    console.log("WebSocket is still connecting. Message not sent.");
                 }
             }
         }
@@ -555,6 +558,7 @@ class ChatModule extends React.Component {
                         <Row width="800px" padding="medium" space="small">
                             <Box padding="small">
                                 <input
+                                    data-testid="messageText"
                                     id="messageText"
                                     style={input_text_style}
                                     value={this.state.message_draft}
@@ -677,4 +681,5 @@ class ChatModule extends React.Component {
     }
 }
 
+export default ChatModule;
 export {ChatModule};

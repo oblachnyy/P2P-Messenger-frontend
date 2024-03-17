@@ -54,12 +54,15 @@ class Home extends React.Component {
             .post(post_favorite, body)
             .then((response) => {
                 const updatedRooms = this.state.rooms;
+                console.log("Заранее: ", updatedRooms);
                 updatedRooms.forEach(room => {
                     if (room.room_name === room_name) {
                         room.is_favorites = method === 'add';
+                        console.log(room.is_favorites);
                     }
                 });
                 this.setState({ rooms: updatedRooms });
+                console.log(updatedRooms);
             })
             .catch((err) => {
                 localStorage.removeItem("token");
@@ -123,19 +126,19 @@ class Home extends React.Component {
     startNewRoomClick(e) {
         const roomName = this.state.new_room_name.trim();
         if (roomName === "") {
-            const errorMessage = "Название команты не может быть пустым";
+            const errorMessage = "Название комнаты не может быть пустым";
             this.setState({ errorMessage });
             return;
         }
 
-        if (roomName.includes(" ")) {
-            const errorMessage = "Название команты не может быть пустым";
-            this.setState({ errorMessage });
-            return;
-        }
+        // if (roomName.includes(" ")) {
+        //     const errorMessage = "Название комнаты не может быть пустым";
+        //     this.setState({ errorMessage });
+        //     return;
+        // }
 
         if (roomName.length > 20) {
-            const errorMessage = "Название команты не может иметь более 20 символов";
+            const errorMessage = "Название комнаты не может иметь более 20 символов";
             this.setState({ errorMessage });
             return;
         }
@@ -158,7 +161,7 @@ class Home extends React.Component {
                 if (response.data) {
                     // Добавление в закладки
                     this.addFavorite(e, roomName);
-
+                    console.log(response.data.room_name);
                     // Переход в созданную комнату
                     this.setState({ roomNav: response.data.room_name });
                 }
@@ -217,7 +220,10 @@ class Home extends React.Component {
             .get(get_room + "/" + room_name)
             .then((response) => {
                 if (response.data) {
+                    // Проверяем, является ли response.data строкой
+                    // const responseData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
                     console.log(response.data);
+                    console.log(response.data.room_name);
                     this.setState({ roomNav: response.data.room_name });
                 }
             })
@@ -235,6 +241,7 @@ class Home extends React.Component {
             timeout: 1000,
             headers: {
                 "Access-Control-Allow-Origin": "*",
+                "Accept": "application/json",
                 Authorization: `Bearer ${token}`,
             },
         });
@@ -318,6 +325,7 @@ class Home extends React.Component {
                             <Box>
                                 <input
                                     id="messageText"
+                                    data-testid="roomInput"
                                     style={input_text_style}
                                     value={this.state.new_room_name}
                                     onChange={this.onNewRoomChange}
@@ -348,6 +356,7 @@ class Home extends React.Component {
                                 <Box>
                                     <input
                                         id="messageText"
+                                        data-testid="searchInput"
                                         style={input_text_style}
                                         value={this.state.selected_room_name}
                                         onChange={this.onSelectedRoomChange}
@@ -374,6 +383,7 @@ class Home extends React.Component {
                                         return (
                                             <Box margin="small" key={room.id}>
                                                 <Chip
+                                                    data-testid="TEST1"
                                                     icon={FavoriteIcon}
                                                     onClick={(e) => this.handleRoomClick(e)}
                                                     label={room.room_name}
@@ -389,6 +399,7 @@ class Home extends React.Component {
                                         return (
                                             <Box margin="20px" key={room.id}>
                                                 <Chip
+                                                    data-testid="TEST2"
                                                     icon={FavoriteBorderIcon}
                                                     onClick={(e) => this.handleRoomClick(e)}
                                                     label={room.room_name}

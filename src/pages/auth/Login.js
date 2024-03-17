@@ -94,7 +94,7 @@ class Login extends React.Component {
         if (redirectToRegistration) {
             return <Redirect to="/registration"/>;
         } else if (isLoggedIn) {
-            return <Redirect to="/home"/>;
+            return <Redirect data-testid="redirect-component" to="/home" />;
         } else {
             return (
                 <Box
