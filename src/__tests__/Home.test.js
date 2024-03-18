@@ -219,7 +219,8 @@ describe('Home component', () => {
         expect(instance.state.errorMessage).toEqual('Название комнаты не должно дублировать название других комнат');
     });
 
-    it('name of the room cannot be empty', async () => {
+
+    it('validates room name restrictions', async () => {
         const wrapper = shallow(<Home />);
         const instance = wrapper.instance();
 
@@ -232,38 +233,24 @@ describe('Home component', () => {
         expect(instance.state.errorMessage).toEqual("Название комнаты не может быть пустым");
 
         expect(wrapper.find('p').text()).toEqual("Название комнаты не может быть пустым");
-    });
 
-    it('name of the room cannot consist only of a space', async () => {
-        const wrapper = shallow(<Home />);
-        const instance = wrapper.instance();
-
+        // Test for room name consisting only of a space
         instance.setState({ new_room_name: " " });
-
         instance.startNewRoomClick({ preventDefault: jest.fn() });
 
         await new Promise(resolve => setImmediate(resolve));
 
         expect(instance.state.errorMessage).toEqual("Название комнаты не может быть пустым");
 
-        wrapper.update();
-
         expect(wrapper.find('p').text()).toEqual("Название комнаты не может быть пустым");
-    });
 
-    it('name of the room cannot consist only of a space', async () => {
-        const wrapper = shallow(<Home />);
-        const instance = wrapper.instance();
-
+        // Test for room name with more than 20 characters
         instance.setState({ new_room_name: '1234567890qwertyuiopa' });
-
         instance.startNewRoomClick({ preventDefault: jest.fn() });
 
         await new Promise(resolve => setImmediate(resolve));
 
         expect(instance.state.errorMessage).toEqual("Название комнаты не может иметь более 20 символов");
-
-        wrapper.update();
 
         expect(wrapper.find('p').text()).toEqual("Название комнаты не может иметь более 20 символов");
     });
@@ -297,7 +284,7 @@ describe('Home component', () => {
         expect(instance.state.rooms).toEqual([{room_name: 'TestRoom', room_id: 1, members: []}]);
     });
 
-    it('should exit if roomName is empty in findRoomByName', () => {
+    it('validates roomName in findRoomByName', () => {
         const wrapper = shallow(<Home />);
 
         const setStateSpy = jest.spyOn(wrapper.instance(), 'setState');
@@ -310,21 +297,14 @@ describe('Home component', () => {
 
         // Проверяем, что setState не был вызван
         expect(setStateSpy).not.toHaveBeenCalled();
-    });
-
-    it('should exit if roomName contains spaces', () => {
-        const wrapper = shallow(<Home />);
-
-        const setStateSpy = jest.spyOn(wrapper.instance(), 'setState');
 
         wrapper.setState({ selected_room_name: "a b" });
-
-        const fakeEvent = { preventDefault: jest.fn() };
 
         wrapper.instance().findRoomByName(fakeEvent);
 
         expect(setStateSpy).not.toHaveBeenCalled();
     });
+
 
     it('handles room click and sets roomNav state', async () => {
         const mockedResponse = { room_name: 'TestRoom', room_id: 1, members: [] };

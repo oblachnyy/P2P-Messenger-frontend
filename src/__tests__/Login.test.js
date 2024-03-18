@@ -46,7 +46,7 @@ describe('Login component tests', () => {
         expect(loginButton).toBeDisabled();
     });
 
-    it('enables login button when form is valid', () => {
+    it('enables login button when form is valid, FS_LOGIN_3', () => {
         const { getByText, getByPlaceholderText } = render(<Login />);
         const loginButton = getByText('Войти');
         const usernameInput = getByPlaceholderText('Введите логин');
@@ -58,7 +58,7 @@ describe('Login component tests', () => {
         expect(loginButton).toBeEnabled();
     });
 
-    it('displays error message for invalid login attempt', async () => {
+    it('displays error message for invalid login attempt, FS_LOGIN_2', async () => {
         axios.post.mockRejectedValueOnce({ response: { data: { error: 'Invalid credentials' } } });
 
         const { getByText, getByPlaceholderText } = render(<Login />);

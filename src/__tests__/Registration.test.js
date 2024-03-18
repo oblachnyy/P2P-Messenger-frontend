@@ -31,19 +31,13 @@ describe('Registration component', () => {
         expect(instance.state.isRegisteredIn).toBe(true)
     });
 
-
-    it('should set error message when user with provided email already exists', async () => {
-        // Создаем мок для axios
+    it('handles registration errors correctly', async () => {
         const mock = new MockAdapter(axios);
-
-        // Создаем компонент Registration и получаем его инстанс
         const registrationComponent = mount(<Registration />);
         const instance = registrationComponent.instance();
 
-        // Мокируем запрос с неправильным статусом и данными
+        // Test case 1: User with provided email already exists
         mock.onPost(registration).reply(400, { detail: "REGISTER_USER_ALREADY_EXISTS" });
-
-        // Устанавливаем значения полей формы
         instance.setState({
             isEmailValid: true,
             isUsernameValid: true,
@@ -52,43 +46,14 @@ describe('Registration component', () => {
             username: 'testUser123',
             password: 'password123'
         });
-
-        // Вызываем метод registerHandler
         instance.registerHandler();
-
         await new Promise(resolve => setImmediate(resolve));
-
-        // Проверяем, что сообщение об ошибке установлено правильно
         expect(instance.state.error_message).toEqual("Пользователь с таким email существует.");
-    });
 
-    it('registration failure with incorrect server response', async () => {
-        // Создаем мок для axios
-        const mock = new MockAdapter(axios);
-
-        // Создаем компонент Registration и получаем его инстанс
-        const registrationComponent = mount(<Registration />);
-        const instance = registrationComponent.instance();
-
-        // Мокируем запрос с неправильным статусом и данными
+        // Test case 2: Registration failure with incorrect server response
         mock.onPost(registration).reply(500, {});
-
-        // Устанавливаем значения полей формы
-        instance.setState({
-            isEmailValid: true,
-            isUsernameValid: true,
-            isPasswordValid: true,
-            email: 'test@example.com',
-            username: 'testUser123',
-            password: 'password123'
-        });
-
-        // Вызываем метод registerHandler
         instance.registerHandler();
-
         await new Promise(resolve => setImmediate(resolve));
-
-        // Проверяем, что сообщение об ошибке установлено правильно
         expect(instance.state.error_message).toEqual("Ошибка во время регистрации.");
     });
 

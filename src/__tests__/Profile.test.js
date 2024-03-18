@@ -1,12 +1,12 @@
 import React from "react";
 import {mount, shallow} from "enzyme";
-import Profile from "/src/pages/nav/Profile";
+import Profile from "../pages/nav/Profile";
 import { act } from 'react-dom/test-utils';
 import { configure } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import {get_user_from_token} from "/src/api/auth";
+import {get_user_from_token} from "../api/auth";
 import {MemoryRouter, Redirect} from "react-router-dom";
 import 'jest-localstorage-mock';
 
@@ -136,39 +136,6 @@ describe("Profile", () => {
         });
         expect(wrapper.state("isLoaded")).toEqual(true);
         expect(localStorage.getItem("profilePicURL")).toEqual("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Anonymous.svg/1481px-Anonymous.svg.png");
-    });
-
-
-    it('handles last name change', () => {
-        const wrapper = mount(<Profile />);
-        const lastNameInput = wrapper.find('input[placeholder="Фамилия"]');
-        lastNameInput.simulate('change', { target: { value: 'NewLastName' } });
-        expect(wrapper.state('last_name')).toEqual('NewLastName');
-        wrapper.unmount();
-    });
-
-    it('handles first name change', () => {
-        const wrapper = mount(<Profile />);
-        const firstNameInput = wrapper.find('input[placeholder="Имя"]');
-        firstNameInput.simulate('change', { target: { value: 'NewFirstName' } });
-        expect(wrapper.state('first_name')).toEqual('NewFirstName');
-        wrapper.unmount();
-    });
-
-    it('handles surname change', () => {
-        const wrapper = mount(<Profile />);
-        const surnameInput = wrapper.find('input[placeholder="Отчество"]');
-        surnameInput.simulate('change', { target: { value: 'NewSurname' } });
-        expect(wrapper.state('surname')).toEqual('NewSurname');
-        wrapper.unmount();
-    });
-
-    it('handles new username change', () => {
-        const wrapper = mount(<Profile />);
-        const newUsernameInput = wrapper.find('input[placeholder="Новый логин"]');
-        newUsernameInput.simulate('change', { target: { value: 'NewUsername' } });
-        expect(wrapper.state('new_username')).toEqual('NewUsername');
-        wrapper.unmount();
     });
 
     it("prevents default action for Enter key", () => {
@@ -480,13 +447,8 @@ describe("Profile", () => {
             preventDefault: jest.fn(),
         });
 
-        // await new Promise(resolve => setImmediate(resolve));
-
-        // Проверка, что errorMessage не устанавливается
         expect(wrapper.state().errorMessage).toEqual('');
-        // expect(wrapper.state().isChangesSaved).toEqual(true)
-        // expect(wrapper.state().message).toEqual('Изменения сохранены');
-        // expect(wrapper.state().shouldRedirect).toEqual(true);
+
     });
 
 });

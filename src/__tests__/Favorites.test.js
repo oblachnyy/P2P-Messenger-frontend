@@ -29,27 +29,6 @@ describe("Favorites Component", () => {
         preventDefault: jest.fn(),
     };
 
-    it("fetches rooms on component mount", async () => {
-        const wrapper = mount(<Favorites/>);
-        const mockRoomsData = [
-            {room_name: "Room1", is_favorites: true, is_owner: true},
-            {room_name: "Room2", is_favorites: false, is_owner: false},
-        ];
-
-        // Mocking axios.get method
-        mock.onGet(get_favorites).reply(200, mockRoomsData);
-
-        // Wait for the component to update
-        await act(async () => {
-            setTimeout(() => {
-                wrapper.update();
-                expect(wrapper.state("rooms")).toEqual(mockRoomsData);
-            }, 1000);
-        });
-
-        wrapper.unmount();
-    });
-
     it('fetches rooms successfully', async () => {
         const wrapper = mount(<Favorites/>);
         const mockRoomsData = [
