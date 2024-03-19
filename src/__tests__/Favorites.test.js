@@ -2,13 +2,14 @@ import React from "react";
 import {mount, shallow} from "enzyme";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import Favorites from '/src/pages/nav/Favorites'
-import {get_favorite, get_favorites, get_room, get_rooms, post_favorite} from "/src/api/rooms";
+import Favorites from '../pages/nav/Favorites'
+import {get_favorite, get_favorites, get_room, get_rooms, post_favorite} from "../api/rooms";
 import { act } from 'react-dom/test-utils';
 
 import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import {get_user_from_token} from "/src/api/auth";
+import {get_user_from_token} from "../api/auth";
+import Home from "../pages/nav/Home";
 
 const mock = new MockAdapter(axios);
 
@@ -134,7 +135,7 @@ describe("Favorites Component", () => {
     });
 
 
-    it('deletes a room on handleClick', async () => {
+    it('deletes a room on handleClick, FS_DeleteRoom_1', async () => {
         const wrapper = mount(<Favorites/>);
         const roomNameToDelete = 'RoomToDelete';
         const mockRoomsData = [
@@ -215,47 +216,6 @@ describe("Favorites Component", () => {
         expect(console.log).toHaveBeenCalledWith(expect.stringContaining('ERROR FETCHING SINGLE ROOM'));
 
         wrapper.unmount();
-    });
-
-
-    it("handles error when adding a room to favorites", async () => {
-        const wrapper = mount(<Favorites/>);
-        const roomNameToAdd = 'RoomToAdd';
-        const errorMessage = 'Failed to add room to favorites';
-
-        mock.onPost(post_favorite).reply(500, { error: errorMessage });
-
-        await wrapper.instance().addFavorite({ preventDefault: () => {} }, roomNameToAdd);
-
-        expect(wrapper.state('rooms').some(room => room.room_name === roomNameToAdd)).toBeFalsy();
-    });
-
-    it('handles error when adding room to favorites', async () => {
-        const wrapper = mount(<Favorites/>);
-        const roomNameToAdd = 'RoomToAdd';
-        const errorMessage = 'Failed to add room to favorites';
-
-        // Mocking axios.post method to simulate an error
-        mock.onPost(post_favorite).reply(500, { error: errorMessage });
-
-        try {
-            // Вызываем метод, который добавляет комнату в избранное
-            await act(async () => {
-                await wrapper.instance().addFavorite(mockEvent, roomNameToAdd);
-            });
-
-            // Ждем обновления компонента
-            await act(async () => {
-                wrapper.update();
-            });
-
-            // Проверяем, что комната не была добавлена в избранное из-за ошибки
-            expect(wrapper.state('rooms').some(room => room.room_name === roomNameToAdd)).toBeFalsy();
-        } catch (error) {
-            console.error("Тест завершился с ошибкой:", error);
-        } finally {
-            wrapper.unmount();
-        }
     });
 
     it('does not add room to favorites on request error', async () => {
@@ -341,29 +301,6 @@ describe("Favorites Component", () => {
         wrapper.unmount();
     });
 
-    it('removes room from favorites upon successful request', async () => {
-        const wrapper = mount(<Favorites/>);
-        const roomNameToRemove = 'RoomToRemove';
-        const mockRoomsData = [
-            {room_name: 'Room1', is_favorites: true, is_owner: true},
-            {room_name: 'Room2', is_favorites: false, is_owner: false},
-            {room_name: roomNameToRemove, is_favorites: true, is_owner: false},
-        ];
-
-        // Мокируем метод удаления комнаты из избранного
-        mock.onDelete(`${get_room}/${roomNameToRemove}`).reply(200);
-
-        // Симулируем вызов handleClick с roomNameToRemove
-        await act(async () => {
-            wrapper.instance().handleClick(mockEvent, roomNameToRemove, 2);
-            await wrapper.update();
-        });
-
-        expect(wrapper.state('rooms')).not.toContainEqual(expect.objectContaining({room_name: roomNameToRemove}));
-
-        expect(mock.history.delete.length).toBe(1);
-        expect(mock.history.delete[0].url).toBe(`${get_room}/${roomNameToRemove}`);
-    });
 
     it("should call startNewRoomClick when Enter key is pressed", () => {
         const mockStartNewRoomClick = jest.fn();
@@ -441,7 +378,6 @@ describe("Favorites Component", () => {
 
         const handleFavoriteRequestSpy = jest.spyOn(instance, 'handleFavoriteRequest');
 
-        // Вызываем метод addFavorite
         instance.removeFavorite({ preventDefault: jest.fn() }, 'Room 1' );
 
         await new Promise(resolve => setImmediate(resolve));

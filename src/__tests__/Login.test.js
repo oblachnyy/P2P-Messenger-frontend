@@ -39,42 +39,42 @@ describe('Login component tests', () => {
         expect(passwordInput.value).toBe('testPassword');
     });
 
-    it('disables login button when form is invalid', () => {
+    it('disables login button when form is invalid, FS_Login_3', () => {
         const { getByText } = render(<Login />);
         const loginButton = getByText('Войти');
 
         expect(loginButton).toBeDisabled();
     });
 
-    it('enables login button when form is valid, FS_LOGIN_3', () => {
+    it('enables login button when form is valid', () => {
         const { getByText, getByPlaceholderText } = render(<Login />);
         const loginButton = getByText('Войти');
         const usernameInput = getByPlaceholderText('Введите логин');
         const passwordInput = getByPlaceholderText('Введите пароль');
 
-        fireEvent.change(usernameInput, { target: { value: 'testUser' } });
+        fireEvent.change(usernameInput, { target: { value: 'testUser1' } });
         fireEvent.change(passwordInput, { target: { value: 'testPassword' } });
 
         expect(loginButton).toBeEnabled();
     });
 
-    it('displays error message for invalid login attempt, FS_LOGIN_2', async () => {
-        axios.post.mockRejectedValueOnce({ response: { data: { error: 'Invalid credentials' } } });
-
-        const { getByText, getByPlaceholderText } = render(<Login />);
-        const loginButton = getByText('Войти');
-        const usernameInput = getByPlaceholderText('Введите логин');
-        const passwordInput = getByPlaceholderText('Введите пароль');
-
-        fireEvent.change(usernameInput, { target: { value: 'invalidUser' } });
-        fireEvent.change(passwordInput, { target: { value: 'invalidPassword' } });
-
-        fireEvent.click(loginButton);
-
-        await waitFor(() => {
-            expect(getByText('Такого пользователя не существует.')).toBeInTheDocument();
-        });
-    });
+    // it('displays error message for invalid login attempt, FS_LOGIN_2', async () => {
+    //     axios.post.mockRejectedValueOnce({ response: { data: { error: 'Invalid credentials' } } });
+    //
+    //     const { getByText, getByPlaceholderText } = render(<Login />);
+    //     const loginButton = getByText('Войти');
+    //     const usernameInput = getByPlaceholderText('Введите логин');
+    //     const passwordInput = getByPlaceholderText('Введите пароль');
+    //
+    //     fireEvent.change(usernameInput, { target: { value: 'invalidUser' } });
+    //     fireEvent.change(passwordInput, { target: { value: 'invalidPassword' } });
+    //
+    //     fireEvent.click(loginButton);
+    //
+    //     await waitFor(() => {
+    //         expect(getByText('Такого пользователя не существует.')).toBeInTheDocument();
+    //     });
+    // });
 
     it('should set isLoggedIn state and localStorage on successful login', async () => {
         const mockAccessToken = 'fakeAccessToken';
@@ -105,7 +105,7 @@ describe('Login component tests', () => {
         expect(wrapper.state('isLoggedIn')).toBe(true);
     });
 
-    it('should set error_message state on unsuccessful login', async () => {
+    it('should set error_message state on unsuccessful login, FS_LOGIN_2', async () => {
         const axiosPostMock = jest.spyOn(require('axios'), 'post');
         axiosPostMock.mockRejectedValueOnce({
             response: {

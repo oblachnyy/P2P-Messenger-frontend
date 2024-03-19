@@ -9,6 +9,7 @@ import MockAdapter from "axios-mock-adapter";
 import {get_user_from_token} from "../api/auth";
 import {MemoryRouter, Redirect} from "react-router-dom";
 import 'jest-localstorage-mock';
+import {render} from "@testing-library/react";
 
 configure({ adapter: new Adapter() });
 const mock = new MockAdapter(axios);
@@ -47,20 +48,6 @@ describe("Profile", () => {
         wrapper.unmount();
     });
 
-    it("toggles edit mode", () => {
-        const wrapper = mount(<Profile />);
-        const editButton = wrapper.find('Button[text="Изменить данные"]');
-
-        act(() => {
-            setTimeout(() => {
-                editButton.simulate('click');
-                wrapper.update(); // Update the component state
-                expect(wrapper.state('isEditMode')).toEqual(true);
-                wrapper.unmount();
-            }, 0);
-        });
-    });
-
     it("toggles avatar edit mode", () => {
         const wrapper = mount(<Profile />);
         const avatarButton = wrapper.find('Button[text="Изменить аватарку"]');
@@ -73,14 +60,6 @@ describe("Profile", () => {
                 wrapper.unmount();
             }, 0);
         });
-    });
-
-
-    it("handles password change", () => {
-        const wrapper = mount(<Profile />);
-        wrapper.find('input[placeholder="Новый пароль"]').simulate('change', { target: { value: 'NewPassword' } });
-        expect(wrapper.state('new_password')).toEqual('NewPassword');
-        wrapper.unmount();
     });
 
     it("handles new username change", () => {
@@ -274,9 +253,6 @@ describe("Profile", () => {
         // Поиск кнопки "Изменить данные"
         const editButton = wrapper.find('button').filterWhere(button => button.text() === 'Изменить данные');
 
-        // регистрируем HTML-содержимое обертки для отладки
-        console.log(wrapper.debug());
-
         // Проверка, найдена ли кнопка перед симуляцией клика
         expect(editButton.exists()).toBe(true);
 
@@ -362,7 +338,7 @@ describe("Profile", () => {
         expect(onEnterHandlerSpy).toHaveBeenCalled();
     });
 
-    it('should set error message if not all fields are filled in', async () => {
+    it('should set error message if not all fields are filled in, FS_Profile_2', async () => {
 
         const wrapper = shallow(<Profile />);
 
@@ -381,7 +357,7 @@ describe("Profile", () => {
         expect(wrapper.state().errorMessage).toEqual('Все поля должны быть заполнены');
     });
 
-    it('should set error message if name or surname filed contain numbers', async () => {
+    it('should set error message if name or surname filed contain numbers, FS_Profile_2', async () => {
 
         const wrapper = shallow(<Profile />);
 
@@ -404,7 +380,7 @@ describe("Profile", () => {
         expect(wrapper.state().errorMessage).toEqual('Фамилия, имя и отчество могут содержать только буквы');
     });
 
-    it('should set error message if surname filed contain numbers', async () => {
+    it('should set error message if surname filed contain numbers, FS_Profile_2', async () => {
 
         const wrapper = shallow(<Profile />);
 

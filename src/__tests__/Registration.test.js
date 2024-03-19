@@ -1,5 +1,5 @@
 import React from 'react';
-import {mount, configure} from 'enzyme';
+import {mount, configure, shallow} from 'enzyme';
 import Registration from '/src/pages/auth/Registration';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
@@ -31,7 +31,7 @@ describe('Registration component', () => {
         expect(instance.state.isRegisteredIn).toBe(true)
     });
 
-    it('handles registration errors correctly', async () => {
+    it('handles registration errors correctly, FS_Register_3 ', async () => {
         const mock = new MockAdapter(axios);
         const registrationComponent = mount(<Registration />);
         const instance = registrationComponent.instance();
@@ -214,6 +214,88 @@ describe('Registration component', () => {
 
         // Ожидаем успешного входа
         expect(registrationComponent.find('Registration').state('isLoggedIn')).toBe(true);
+    });
+
+    it('should set username state and isUsernameValid state correctly based on input value, FS_Username_1', () => {
+        const wrapper = mount(<Registration />);
+        const instance = wrapper.instance();
+        const setStateMock = jest.spyOn(instance, 'setState');
+        const validateFormMock = jest.spyOn(instance, 'validateForm');
+
+        // Валидное имя пользователя
+        const validEventMock = { target: { value: 'ValidUsername123' } };
+        instance.usernameChange(validEventMock);
+
+        expect(setStateMock).toHaveBeenCalledWith({
+            username: 'ValidUsername123',
+            isUsernameValid: true,
+            error_message: ""
+        }, instance.validateForm);
+
+        // Невалидное имя пользователя
+        const invalidEventMock = { target: { value: 'Inv@lid' } };
+        instance.usernameChange(invalidEventMock);
+
+        expect(setStateMock).toHaveBeenCalledWith({
+            username: 'Inv@lid',
+            isUsernameValid: false,
+            error_message: "Имя пользователя должно содержать от 4 до 20 символов и должно включать буквы и цифры."
+        }, instance.validateForm);
+    });
+
+    it('should have a disabled registration button with invalid input, FS_Register_2', async () => {
+        const wrapper  = mount(<Registration />);
+        const instance = wrapper.find('Registration').instance();
+
+        // Начинаем с проверки, что кнопка изначально неактивна
+        expect(instance.state.isFormValid).toBe(false);
+
+        // Симулируем ввод неверных данных (например, некорректный email)
+        wrapper.find('input[name="email"]').simulate('change', {
+            target: { value: 'invalidemail' },
+        });
+
+        // Обновляем обёртку, чтобы отреагировать на изменения после симуляции ввода
+        wrapper.update();
+
+        // Проверяем, что кнопка остается неактивной
+        expect(instance.state.isFormValid).toBe(false);
+    });
+
+    it('should set password state and isPasswordValid state correctly based on input value, FS_Password_1', () => {
+        const wrapper = mount(<Registration />);
+        const instance = wrapper.instance();
+        const setStateMock = jest.spyOn(instance, 'setState');
+
+        // Валидный пароль
+        const validEventMock = { target: { value: 'ValidPassword123!' } };
+        instance.passwordChange(validEventMock);
+
+        expect(setStateMock).toHaveBeenCalledWith({
+            password: 'ValidPassword123!',
+            isPasswordValid: true,
+            error_message: ""
+        }, instance.validateForm);
+
+        // Невалидный пароль (менее 6 символов)
+        const invalidEventMock = { target: { value: 'short' } };
+        instance.passwordChange(invalidEventMock);
+
+        expect(setStateMock).toHaveBeenCalledWith({
+            password: 'short',
+            isPasswordValid: false,
+            error_message: "Пароль должен содержать от 6 до 40 символов и может включать буквы, цифры и спец символы."
+        }, instance.validateForm);
+
+        // Невалидный пароль (более 40 символов)
+        const invalidLongEventMock = { target: { value: 'a'.repeat(41) } };
+        instance.passwordChange(invalidLongEventMock);
+
+        expect(setStateMock).toHaveBeenCalledWith({
+            password: 'a'.repeat(41),
+            isPasswordValid: false,
+            error_message: "Пароль должен содержать от 6 до 40 символов и может включать буквы, цифры и спец символы."
+        }, instance.validateForm);
     });
 
 });

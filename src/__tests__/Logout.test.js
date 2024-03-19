@@ -5,7 +5,7 @@ import { createMemoryHistory } from 'history';
 import { Router } from 'react-router-dom';
 import Logout from '/src/pages/auth/Logout';
 
-test('Logout component', async () => {
+test('Logout component, FS_Logout_1', async () => {
     const localStorageMock = {
         clear: jest.fn(),
     };

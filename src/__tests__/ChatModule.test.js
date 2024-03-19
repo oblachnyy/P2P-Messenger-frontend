@@ -111,6 +111,35 @@ describe('ChatModule component', () => {
         expect(mockSend).toHaveBeenCalled();
     });
 
+    it('should establish WebSocket connection when client is null in handleMediaFile method', () => {
+        // Создаем моки для WebSocket и checkWebSocket
+        const mockWebSocket = {
+            readyState: 1,
+            send: jest.fn()
+        };
+        global.WebSocket = jest.fn().mockImplementation(() => mockWebSocket);
+        const mockCheckWebSocket = jest.fn().mockReturnValue(mockWebSocket);
+
+        const mockFile = new File([''], 'test.jpg', { type: 'image/jpeg' });
+
+        // Создаем компонент и устанавливаем необходимые состояния
+        const wrapper = shallow(<ChatModule />);
+        wrapper.setState({
+            currentUser: 'testUser',
+            room_name: 'testRoom',
+            selectedMediaFile: mockFile,
+            client: null // Устанавливаем client в null
+        });
+
+        // Переопределяем функцию checkWebSocket в контексте компонента
+        wrapper.instance().checkWebSocket = mockCheckWebSocket;
+
+        // Вызываем метод handleMediaFile
+        wrapper.instance().handleMediaFile('Test message');
+
+        expect(wrapper.instance().client).not.toBe(null);
+    });
+
     it('should create a new WebSocket connection if client.readyState is WebSocket.CLOSED', async () => {
         const mockWebSocket = {
             readyState: 2
@@ -177,7 +206,7 @@ describe('ChatModule component', () => {
         expect(wrapper.state().isButtonDisabled).toBe(false); // Предполагая, что Test message не пуст
     });
 
-    it('disables button when message is empty', () => {
+    it('disables button when message is empty, FS_Room_2', () => {
         const wrapper = shallow(<ChatModule />);
 
         const mockEvent = {
@@ -190,7 +219,7 @@ describe('ChatModule component', () => {
         expect(wrapper.state().isButtonDisabled).toBe(true);
     });
 
-    it('limits message length to 4096 characters', () => {
+    it('limits message length to 4096 characters, FS_Message_1', () => {
         const wrapper = shallow(<ChatModule />);
 
         const longMessageEvent = {
@@ -268,7 +297,7 @@ describe('ChatModule component', () => {
         expect(instance.state.isButtonDisabled).toBe(false);
     });
 
-    it('should disable button when emoji with long message is selected', () => {
+    it('should disable button when emoji with long message is selected, FS_Message_1', () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -304,7 +333,7 @@ describe('ChatModule component', () => {
         jest.restoreAllMocks();
     });
 
-    it('calls showError for invalid file type', async () => {
+    it('calls showError for invalid file type, FS_Media_3', async () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -340,7 +369,7 @@ describe('ChatModule component', () => {
         jest.restoreAllMocks();
     });
 
-    it('calls showError for oversized audio file', async () => {
+    it('calls showError for oversized audio file, FS_Media_1', async () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -371,7 +400,7 @@ describe('ChatModule component', () => {
         jest.restoreAllMocks();
     });
 
-    it('calls showError for oversized video file', async () => {
+    it('calls showError for oversized video file, FS_Media_1', async () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -402,7 +431,7 @@ describe('ChatModule component', () => {
         jest.restoreAllMocks();
     });
 
-    it('calls showError for oversized image file', async () => {
+    it('calls showError for oversized image file, FS_Media_1', async () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -592,7 +621,7 @@ describe('ChatModule component', () => {
         expect(isAllowed).toBe(true);
     });
 
-    it('returns false for disallowed video format', async () => {
+    it('returns false for disallowed video format, FS_Media_2', async () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -693,7 +722,7 @@ describe('ChatModule component', () => {
         expect(document.createElement).toHaveBeenCalledWith('img');
     });
 
-    it('should reject with the correct error message if height or weight < 100',  () => {
+    it('should reject with the correct error message if height or weight < 100, FS_Media_2',  () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 
@@ -719,7 +748,7 @@ describe('ChatModule component', () => {
 
     });
 
-    it('should reject with the correct error message if height or weight > 2048',  () => {
+    it('should reject with the correct error message if height or weight > 2048, FS_Media_2',  () => {
         const wrapper = shallow(<ChatModule />);
         const instance = wrapper.instance();
 

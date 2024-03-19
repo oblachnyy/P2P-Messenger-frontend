@@ -34,7 +34,7 @@ describe('Home component', () => {
         wrapper.unmount();
     });
 
-    it('disables create room button when input is empty', async () => {
+    it('disables create room button when input is empty, FS_Home_2', async () => {
         const { getByText } = render(<Home />);
         const createRoomButton = getByText('Создать комнату');
 
@@ -120,49 +120,27 @@ describe('Home component', () => {
         expect(fetchRoomsSpy).not.toHaveBeenCalled();
     });
 
-    it('adds a room to favorites when addFavorite is called', async () => {
-        mock.onPost(post_favorite, { room_name: 'Room 1', is_chosen: true }).reply(200, {});
-
+    it('adds or removes a room from favorites when corresponding function is called', async () => {
         const wrapper = shallow(<Home />);
         const instance = wrapper.instance();
 
-        // Добавляем комнату через setState
         const newRoom = { id: 1, room_name: 'Room 1', is_favorites: false };
-        instance.setState(prevState => ({
-            rooms: [newRoom],
-        }));
+        instance.setState({ rooms: [newRoom] });
 
         const handleFavoriteRequestSpy = jest.spyOn(instance, 'handleFavoriteRequest');
 
+        // Добавляем комнату в избранное
+        mock.onPost(post_favorite, { room_name: 'Room 1', is_chosen: true }).reply(200, {});
         instance.addFavorite({ preventDefault: jest.fn() }, 'Room 1');
-
         await new Promise(resolve => setImmediate(resolve));
-
         expect(handleFavoriteRequestSpy).toHaveBeenCalledWith('add', expect.anything(), 'Room 1');
-
         expect(instance.state.rooms).toEqual([{ id: 1, room_name: 'Room 1', is_favorites: true }]);
 
-    });
-
-    it('remove a room from favorites when removeFavorite is called', async () => {
+        // Удаляем комнату из избранного
         mock.onPost(post_favorite, { room_name: 'Room 1', is_chosen: false }).reply(200, {});
-
-        const wrapper = shallow(<Home />);
-        const instance = wrapper.instance();
-
-        const newRoom = { id: 1, room_name: 'Room 1', is_favorites: true };
-        instance.setState(prevState => ({
-            rooms: [newRoom],
-        }));
-
-        const handleFavoriteRequestSpy = jest.spyOn(instance, 'handleFavoriteRequest');
-
-        instance.removeFavorite({ preventDefault: jest.fn() }, 'Room 1' );
-
+        instance.removeFavorite({ preventDefault: jest.fn() }, 'Room 1');
         await new Promise(resolve => setImmediate(resolve));
-
         expect(handleFavoriteRequestSpy).toHaveBeenCalledWith('remove', expect.anything(), 'Room 1');
-
         expect(instance.state.rooms).toEqual([{ id: 1, room_name: 'Room 1', is_favorites: false }]);
     });
 
@@ -178,7 +156,7 @@ describe('Home component', () => {
         expect(instance.state.new_room_name).toEqual('NewRoom');
     });
 
-    it('creates a new room and adds it to favorites', async () => {
+    it('creates a new room and adds it to favorites, FS_CreateRoom_1', async () => {
         const mockedRoomResponse = { room_name: 'NewRoom' };
         mock.onPost(post_room).reply(200, mockedRoomResponse);
 
@@ -202,7 +180,7 @@ describe('Home component', () => {
         expect(instance.state.roomNav).toEqual('NewRoom');
     });
 
-    it('does not allow creating a room with a duplicate name', async () => {
+    it('does not allow creating a room with a duplicate name, FS_CreateRoom_1', async () => {
         const roomName = 'DuplicateRoom';
 
         mock.onPost(post_room, { room_name: roomName }).reply(400, { detail: 'Room name is already taken. Please choose a different name.' });
@@ -220,7 +198,7 @@ describe('Home component', () => {
     });
 
 
-    it('validates room name restrictions', async () => {
+    it('validates room name restrictions, FS_CreateRoom_1', async () => {
         const wrapper = shallow(<Home />);
         const instance = wrapper.instance();
 
@@ -330,6 +308,12 @@ describe('Home component', () => {
         await new Promise(resolve => setImmediate(resolve));
 
         expect(instance.state.roomNav).toEqual('TestRoom');
+    });
+
+    it('should have default value of 10 for roomsPerPage, FS_Pagination_1', () => {
+        const wrapper = mount(<Home />);
+        const defaultRoomsPerPage = wrapper.state().roomsPerPage;
+        expect(defaultRoomsPerPage).toBe(10);
     });
 });
 
